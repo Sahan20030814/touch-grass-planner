@@ -143,7 +143,7 @@ class H(BaseHTTPRequestHandler):
         d = json.loads(raw or b"{}")
         if p == "/api/plan":
             prompt = (f"Activity: {d.get('activity')}. Time available: {d.get('minutes')} minutes. Month: {date.today():%B}. "
-                      f"Conditions: {d.get('weather') or 'unknown'}. Garden jobs due: {', '.join(d.get('garden') or []) or 'none'}. Write the plan.")
+                      f"Conditions: {d.get('weather') or 'unknown'}. Garden jobs due: {', '.join(d.get('garden') or []) or 'none'}. Planned route: {d.get('loop') or 'free choice'}. Write the plan.")
             try: return self.send({"plan": ask_llm(prompt), "source": MODEL})
             except Exception: return self.send({"plan": fallback(d), "source": "offline template (model not running)"})
         if p == "/api/journal":

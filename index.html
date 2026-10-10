@@ -1,140 +1,555 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Touch Grass Planner</title>
-<style>
-:root{--frost:#e8efec;--spruce:#16301f;--moss:#4f6b3a;--lichen:#b7cc7a;--maple:#b8432a;--ink:#14211a}
-@media(prefers-color-scheme:dark){:root{--frost:#101a14;--ink:#e3ece6;--spruce:#dfe9c4;--moss:#9db96b}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--frost);color:var(--ink);font:16px/1.55 system-ui,sans-serif}
-h1,h2{font-family:Palatino,"Iowan Old Style",Georgia,serif;color:var(--spruce);margin:0}
-h1{font-size:clamp(2rem,6vw,3.4rem);line-height:1.05}
-main{max-width:1000px;margin:0 auto;padding:32px 20px 60px;display:grid;grid-template-columns:3fr 2fr;gap:40px}
-header{grid-column:1/-1;display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:8px}
-#status{font-size:.85rem;color:var(--moss)}
-section{min-width:0}h2{font-size:1.4rem;margin:0 0 10px}
-label{display:block;font-size:.9rem;margin:12px 0 4px}
-input,select,textarea,button{font:inherit;color:inherit}
-input,select,textarea{width:100%;padding:9px 10px;border:1.5px solid var(--moss);border-radius:6px;background:transparent}
-button{cursor:pointer;border:0;border-radius:6px;padding:11px 18px;background:var(--spruce);color:var(--frost);font-weight:600}
-button.go{background:var(--maple);color:#fff}button.quiet{background:transparent;color:var(--moss);border:1.5px solid var(--moss)}
-:focus-visible{outline:3px solid var(--maple);outline-offset:2px}
-#plan{white-space:pre-wrap;border-left:5px solid var(--lichen);padding:6px 0 6px 16px;margin-top:20px;font-size:1.05rem}
-.src{font-size:.8rem;color:var(--moss);margin-top:6px}
-ul.rule{list-style:none;padding:0;margin:0}ul.rule li{padding:8px 0;border-bottom:1px solid var(--moss);display:flex;justify-content:space-between;gap:10px}
-ul.rule small{color:var(--moss)}
-.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.row>*{flex:1}
-details{margin:14px 0}summary{cursor:pointer;color:var(--moss)}
-#leave{position:fixed;inset:0;background:#0d1f14;color:#e5efd0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:9}
-#leave.on{display:flex}#leave .t{font:700 clamp(4rem,18vw,9rem)/1 Palatino,Georgia,serif;font-variant-numeric:tabular-nums}
-.streak{font-family:Palatino,Georgia,serif;font-size:2.6rem;color:var(--maple);line-height:1}
-@media(max-width:760px){main{grid-template-columns:1fr}}
-@media print{#status,button,details,form,#journalbox{display:none}main{display:block}}
-</style></head><body>
-<main>
-<header><h1>Touch Grass Planner</h1><div id="status">checking local model…</div></header>
+<html lang="en">
 
-<section>
-  <h2>Plan your time outside</h2>
-  <div class="row">
-    <div><label for="act">What sounds good?</label>
-      <select id="act"><option>walk</option><option>hike</option><option>birdwatching</option><option>run</option><option>fall foliage photo walk</option><option>gardening</option></select></div>
-    <div><label for="min">Minutes: <b id="minv">45</b></label><input id="min" type="range" min="10" max="240" step="5" value="45"></div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Touch Grass Planner</title>
+  <style>
+    :root {
+      --frost: #e8efec;
+      --spruce: #16301f;
+      --moss: #4f6b3a;
+      --lichen: #b7cc7a;
+      --maple: #b8432a;
+      --ink: #14211a
+    }
+
+    @media(prefers-color-scheme:dark) {
+      :root {
+        --frost: #101a14;
+        --ink: #e3ece6;
+        --spruce: #dfe9c4;
+        --moss: #9db96b
+      }
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--frost);
+      color: var(--ink);
+      font: 16px/1.55 system-ui, sans-serif
+    }
+
+    h1,
+    h2 {
+      font-family: Palatino, "Iowan Old Style", Georgia, serif;
+      color: var(--spruce);
+      margin: 0
+    }
+
+    h1 {
+      font-size: clamp(2rem, 6vw, 3.4rem);
+      line-height: 1.05
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 40px
+    }
+
+    header {
+      grid-column: 1/-1;
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      flex-wrap: wrap;
+      gap: 8px
+    }
+
+    #status {
+      font-size: .85rem;
+      color: var(--moss)
+    }
+
+    section {
+      min-width: 0
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      margin: 0 0 10px
+    }
+
+    label {
+      display: block;
+      font-size: .9rem;
+      margin: 12px 0 4px
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+      color: inherit
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1.5px solid var(--moss);
+      border-radius: 6px;
+      background: transparent
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 6px;
+      padding: 11px 18px;
+      background: var(--spruce);
+      color: var(--frost);
+      font-weight: 600
+    }
+
+    button.go {
+      background: var(--maple);
+      color: #fff
+    }
+
+    button.quiet {
+      background: transparent;
+      color: var(--moss);
+      border: 1.5px solid var(--moss)
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--maple);
+      outline-offset: 2px
+    }
+
+    #plan {
+      white-space: pre-wrap;
+      border-left: 5px solid var(--lichen);
+      padding: 6px 0 6px 16px;
+      margin-top: 20px;
+      font-size: 1.05rem
+    }
+
+    .src {
+      font-size: .8rem;
+      color: var(--moss);
+      margin-top: 6px
+    }
+
+    .chk label {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin: 0;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--moss);
+      font-size: 1rem
+    }
+
+    .chk input {
+      width: auto;
+      accent-color: var(--moss)
+    }
+
+    .chk input:checked+span {
+      text-decoration: line-through;
+      opacity: .6
+    }
+
+    ul.rule {
+      list-style: none;
+      padding: 0;
+      margin: 0
+    }
+
+    ul.rule li {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--moss);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px
+    }
+
+    ul.rule small {
+      color: var(--moss)
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px
+    }
+
+    .row>* {
+      flex: 1
+    }
+
+    details {
+      margin: 14px 0
+    }
+
+    summary {
+      cursor: pointer;
+      color: var(--moss)
+    }
+
+    #leave {
+      position: fixed;
+      inset: 0;
+      background: #0d1f14;
+      color: #e5efd0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      z-index: 9
+    }
+
+    #leave.on {
+      display: flex
+    }
+
+    #leave .t {
+      font: 700 clamp(4rem, 18vw, 9rem)/1 Palatino, Georgia, serif;
+      font-variant-numeric: tabular-nums
+    }
+
+    .streak {
+      font-family: Palatino, Georgia, serif;
+      font-size: 2.6rem;
+      color: var(--maple);
+      line-height: 1
+    }
+
+    .btnlike {
+      display: inline-block;
+      padding: 11px 18px;
+      border: 1.5px solid var(--moss);
+      border-radius: 6px;
+      color: var(--moss);
+      text-decoration: none;
+      font-weight: 600
+    }
+
+    .rule li.done span {
+      text-decoration: line-through;
+      opacity: .55
+    }
+
+    .rule label {
+      margin: 0;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      cursor: pointer
+    }
+
+    .rule input[type=checkbox] {
+      width: auto
+    }
+
+    @media(max-width:760px) {
+      main {
+        grid-template-columns: 1fr
+      }
+    }
+
+    @media print {
+
+      #status,
+      button,
+      details,
+      form,
+      #journalbox {
+        display: none
+      }
+
+      main {
+        display: block
+      }
+    }
+
+    #leave {
+      overflow-y: auto;
+      justify-content: safe center
+    }
+
+    #leave>* {
+      flex-shrink: 0
+    }
+
+    #leave #loopbox {
+      width: 100%;
+      max-width: 520px;
+      margin: 18px 0 !important;
+      text-align: left;
+      color: #e5efd0
+    }
+
+    #leave #loopbox h2,
+    #leave #loopbox li,
+    #leave #loopbox small,
+    #leave #loopbox .src {
+      color: #e5efd0
+    }
+
+    #leave #loopbox a {
+      color: #b7cc7a
+    }
+
+    #leave #loopsvg text {
+      fill: #e5efd0 !important
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <header>
+      <h1>Touch Grass Planner</h1>
+      <div id="status">checking local model…</div>
+    </header>
+
+    <section>
+      <h2>Plan your time outside</h2>
+      <div class="row">
+        <div><label for="act">What sounds good?</label>
+          <select id="act">
+            <option>walk</option>
+            <option>hike</option>
+            <option>birdwatching</option>
+            <option>run</option>
+            <option>fall foliage photo walk</option>
+            <option>gardening</option>
+          </select>
+        </div>
+        <div><label for="min">Minutes: <b id="minv">45</b></label><input id="min" type="range" min="10" max="240"
+            step="5" value="45"></div>
+      </div>
+      <label for="wx">Conditions (optional)</label>
+      <div class="row"><input id="wx" placeholder="e.g. cool, light drizzle, sunset at 6:10" style="flex:3"><button
+          id="wxb" class="quiet" type="button">Use my location</button></div>
+      <div class="src" id="wxn"></div>
+      <div class="row"><button id="make" class="go">Make my plan</button><button id="print" class="quiet">Print it,
+          close the laptop</button></div>
+      <div id="plan" aria-live="polite" hidden></div>
+      <div class="src" id="src"></div>
+      <div id="notice" hidden style="margin-top:20px">
+        <h2 style="font-size:1.1rem">What to notice out there</h2>
+        <div class="chk" id="nlist"></div>
+      </div>
+      <div class="row" id="leaverow" hidden><button id="leavebtn">Start. Screen goes dark.</button></div>
+
+      <div id="loopbox" hidden style="margin-top:28px">
+        <h2>Your loop</h2>
+        <div id="map" hidden
+          style="height:300px;width:100%;max-width:520px;border:1.5px solid var(--moss);border-radius:8px;margin-bottom:6px">
+        </div>
+        <div class="src" id="maploc"></div>
+        <svg id="loopsvg" viewBox="0 0 300 220" role="img" aria-label="Rough sketch of your loop"
+          style="width:100%;max-width:420px;border:1.5px solid var(--moss);border-radius:8px"></svg>
+        <ul class="rule" id="legs" style="margin-top:8px"></ul>
+        <p style="margin:10px 0"><a id="maplink" class="btnlike" target="_blank" rel="noopener">Open in maps (needs
+            internet)</a></p>
+        <div class="src">Rough triangle computed on this device from compass bearings, so it works with no signal. With
+          internet it is also drawn on an OpenStreetMap map. It is a straight-line shape, so use the maps link for real
+          streets and trails.</div>
+      </div>
+
+      <div id="birdbox" style="margin-top:36px">
+        <h2>Listen for birds</h2>
+        <p style="color:var(--moss);margin:0 0 10px">Recorded here, identified on this machine by BirdNET.</p>
+        <div class="row"><button id="rec" class="go">Record 15 seconds</button><input id="bf" type="file"
+            accept="audio/*" aria-label="Or pick an audio file"></div>
+        <ul class="rule" id="blist" style="margin-top:10px"></ul>
+        <div class="src" id="bnote"></div>
+      </div>
+      <div id="journalbox" style="margin-top:36px">
+        <h2>Outings</h2>
+        <div class="streak" id="streak">0</div>
+        <div id="streaklbl" style="color:var(--moss)">days outside in a row</div>
+        <ul class="rule" id="jlist" style="margin-top:12px"></ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Plant this week</h2>
+      <details id="setup" open>
+        <summary>Your climate</summary><label for="cl">Climate</label><select id="cl">
+          <option value="tropical">Tropical (Sri Lanka)</option>
+          <option value="frost">Has frost</option>
+        </select>
+        <div id="frostf">
+          <label for="lf">Last spring frost</label><input id="lf" type="date">
+          <label for="ff">First fall frost</label><input id="ff" type="date">
+        </div>
+        <div class="row"><button id="savef">Save</button></div>
+      </details>
+      <div id="gnote" style="color:var(--moss);margin-bottom:8px"></div>
+      <ul class="rule" id="now"></ul>
+      <h2 style="margin-top:22px;font-size:1.1rem">Coming in two weeks</h2>
+      <ul class="rule" id="soon"></ul>
+    </section>
+  </main>
+
+  <div id="leave" role="dialog" aria-label="Time outside">
+    <p style="font-size:1.3rem">Go. This tab will keep time.</p>
+    <div class="t" id="clock">00:00</div>
+    <p>Back early is fine.</p>
+    <div class="row" style="max-width:320px"><button class="go" id="back">I'm back. Log it.</button></div>
   </div>
-  <label for="wx">Conditions (optional)</label>
-  <div class="row"><input id="wx" placeholder="e.g. cool, light drizzle, sunset at 6:10" style="flex:3"><button id="wxb" class="quiet" type="button">Use my location</button></div><div class="src" id="wxn"></div>
-  <div class="row"><button id="make" class="go">Make my plan</button><button id="print" class="quiet">Print it, close the laptop</button></div>
-  <div id="plan" aria-live="polite" hidden></div><div class="src" id="src"></div>
-  <div class="row" id="leaverow" hidden><button id="leavebtn">Start. Screen goes dark.</button></div>
 
-  <div id="birdbox" style="margin-top:36px"><h2>Listen for birds</h2>
-    <p style="color:var(--moss);margin:0 0 10px">Recorded here, identified on this machine by BirdNET.</p>
-    <div class="row"><button id="rec" class="go">Record 15 seconds</button><input id="bf" type="file" accept="audio/*" aria-label="Or pick an audio file"></div>
-    <ul class="rule" id="blist" style="margin-top:10px"></ul><div class="src" id="bnote"></div></div>
-  <div id="journalbox" style="margin-top:36px">
-    <h2>Outings</h2>
-    <div class="streak" id="streak">0</div><div id="streaklbl" style="color:var(--moss)">days outside in a row</div>
-    <ul class="rule" id="jlist" style="margin-top:12px"></ul>
-  </div>
-</section>
+  <script>
+    const $ = id => document.getElementById(id); let garden = [], lastPlan = "", timer = null;
+    const store = { get: k => { try { return localStorage.getItem(k) || "" } catch (e) { return "" } }, set: (k, v) => { try { localStorage.setItem(k, v) } catch (e) { } } };
+    const J = (u, o) => fetch(u, o).then(r => r.json());
+    $("min").oninput = () => $("minv").textContent = $("min").value;
+    J("/api/status").then(s => { $("status").textContent = !s.ollama ? (["localhost", "127.0.0.1"].includes(location.hostname) ? "Model offline: using simple template. Start Ollama." : "Demo mode: built-in plan template. Run it locally for the Gemma version.") : s.ready ? "Local model " + s.model + " ready. No internet needed." : "Run: ollama pull " + s.model });
 
-<section>
-  <h2>Plant this week</h2>
-  <details id="setup" open><summary>Your climate</summary><label for="cl">Climate</label><select id="cl"><option value="tropical">Tropical (Sri Lanka)</option><option value="frost">Has frost</option></select><div id="frostf">
-    <label for="lf">Last spring frost</label><input id="lf" type="date">
-    <label for="ff">First fall frost</label><input id="ff" type="date">
-    </div><div class="row"><button id="savef">Save</button></div></details>
-  <div id="gnote" style="color:var(--moss);margin-bottom:8px"></div>
-  <ul class="rule" id="now"></ul>
-  <h2 style="margin-top:22px;font-size:1.1rem">Coming in two weeks</h2>
-  <ul class="rule" id="soon"></ul>
-</section>
-</main>
+    const NOTICE = {
+      walk: ["A sound you normally tune out", "Three different shades of green", "Something that changed since yesterday"],
+      hike: ["The steepest view behind you", "A trail marker or old stone", "Mud, moss or water: which came first?"],
+      birdwatching: ["A call you cannot name yet", "Where birds go quiet when you stop", "Something with a nest"],
+      run: ["Your breathing when you slow down", "A hill you usually avoid", "Someone else moving outside"],
+      "fall foliage photo walk": ["A leaf with two colours", "Light coming through a canopy", "The first tree turning in your street"],
+      gardening: ["A bed that needs water or shade", "An insect doing a job", "Soil that crumbles in your hand"]
+    };
+    const ANY = ["The farthest sound you can hear", "A spot you would come back to", "Something that smells of rain or earth", "The sky between two things"];
+    function showNotice() {
+      const a = NOTICE[$("act").value] || NOTICE.walk, x = ANY.sort(() => Math.random() - .5).slice(0, 2);
+      $("nlist").innerHTML = [...a, ...x].map(t => `<label><input type="checkbox"><span>${t}</span></label>`).join(""); $("notice").hidden = false
+    }
+    function list(el, items, empty) { el.innerHTML = items.length ? items.map(i => `<li><span>${i.name}</span><small>${i.how}</small></li>`).join("") : `<li><small>${empty}</small></li>` }
+    async function loadGarden() {
+      const cl = $("cl").value, lf = $("lf").value, ff = $("ff").value; $("frostf").hidden = cl == "tropical";
+      if (cl == "frost" && (!lf || !ff)) return;
+      const g = await J(`/api/garden?climate=${cl}&last=${lf}&first=${ff}`); if (g.error) return;
+      garden = g.now.map(c => c.name); list($("now"), g.now, "Nothing to sow now. Good week to weed and mulch."); list($("soon"), g.soon, "Nothing queued.");
+      $("gnote").textContent = g.season || (g.days_to_first_frost > 0 ? `${g.days_to_first_frost} days until first fall frost.` : "First frost has passed.");
+      $("setup").open = false
+    }
+    $("cl").value = store.get("cl") || "tropical"; $("lf").value = store.get("lf"); $("ff").value = store.get("ff");
+    $("cl").onchange = () => { store.set("cl", $("cl").value); loadGarden() }; $("savef").onclick = () => { store.set("lf", $("lf").value); store.set("ff", $("ff").value); loadGarden() }; loadGarden();
 
-<div id="leave" role="dialog" aria-label="Time outside">
-  <p style="font-size:1.3rem">Go. This tab will keep time.</p><div class="t" id="clock">00:00</div>
-  <p>Back early is fine.</p><div class="row" style="max-width:320px"><button class="go" id="back">I'm back. Log it.</button></div>
-</div>
+    $("make").onclick = async () => {
+      $("make").disabled = true; $("make").textContent = "Thinking locally…";
+      const L = await makeLoop();
+      const r = await J("/api/plan", { method: "POST", body: JSON.stringify({ activity: $("act").value, minutes: +$("min").value, weather: $("wx").value, garden, loop: L ? `${L.km} km triangle loop, first leg heading ${dn(L.legs[0][0])}` : "" }) });
+      lastPlan = r.plan; $("plan").hidden = false; $("plan").textContent = r.plan; $("src").textContent = "Written by: " + r.source; $("leaverow").hidden = false; showNotice();
+      $("make").disabled = false; $("make").textContent = "Make my plan"
+    };
+    $("print").onclick = () => window.print();
 
-<script>
-const $=id=>document.getElementById(id);let garden=[],lastPlan="",timer=null;
-const store={get:k=>{try{return localStorage.getItem(k)||""}catch(e){return""}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
-const J=(u,o)=>fetch(u,o).then(r=>r.json());
-$("min").oninput=()=>$("minv").textContent=$("min").value;
-J("/api/status").then(s=>{$("status").textContent=!s.ollama?"Model offline: using simple template. Start Ollama.":s.ready?"Local model "+s.model+" ready. No internet needed.":"Run: ollama pull "+s.model});
+    $("leavebtn").onclick = () => {
+      let t = +$("min").value * 60; $("leave").classList.add("on"); $("leave").insertBefore($("loopbox"), $("back").parentNode); setTimeout(() => LM && LM.invalidateSize(), 100);
+      const tick = () => { const m = Math.floor(Math.abs(t) / 60), s = Math.abs(t) % 60; $("clock").textContent = (t < 0 ? "+" : "") + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0"); t-- };
+      tick(); timer = setInterval(tick, 1000)
+    };
+    $("back").onclick = async () => {
+      clearInterval(timer); $("leave").classList.remove("on"); $("leaverow").after($("loopbox")); setTimeout(() => LM && LM.invalidateSize(), 100);
+      await J("/api/journal", { method: "POST", body: JSON.stringify({ activity: $("act").value, minutes: +$("min").value, note: lastPlan.split("\n")[0] + " (" + document.querySelectorAll("#nlist input:checked").length + " noticed)" }) }); loadJournal()
+    };
 
-function list(el,items,empty){el.innerHTML=items.length?items.map(i=>`<li><span>${i.name}</span><small>${i.how}</small></li>`).join(""):`<li><small>${empty}</small></li>`}
-async function loadGarden(){
-  const cl=$("cl").value,lf=$("lf").value,ff=$("ff").value;$("frostf").hidden=cl=="tropical";
-  if(cl=="frost"&&(!lf||!ff))return;
-  const g=await J(`/api/garden?climate=${cl}&last=${lf}&first=${ff}`);if(g.error)return;
-  garden=g.now.map(c=>c.name);list($("now"),g.now,"Nothing to sow now. Good week to weed and mulch.");list($("soon"),g.soon,"Nothing queued.");
-  $("gnote").textContent=g.season||(g.days_to_first_frost>0?`${g.days_to_first_frost} days until first fall frost.`:"First frost has passed.");
-  $("setup").open=false}
-$("cl").value=store.get("cl")||"tropical";$("lf").value=store.get("lf");$("ff").value=store.get("ff");
-$("cl").onchange=()=>{store.set("cl",$("cl").value);loadGarden()};$("savef").onclick=()=>{store.set("lf",$("lf").value);store.set("ff",$("ff").value);loadGarden()};loadGarden();
+    async function loadJournal() {
+      const j = await J("/api/journal"); const days = new Set(j.map(e => e.date)); let s = 0, d = new Date();
+      if (!days.has(d.toISOString().slice(0, 10))) d.setDate(d.getDate() - 1);
+      while (days.has(d.toISOString().slice(0, 10))) { s++; d.setDate(d.getDate() - 1) }
+      $("streak").textContent = s;
+      $("jlist").innerHTML = j.slice(-5).reverse().map(e => { const nn = (e.note || "").match(/\d+ noticed/); return `<li><span>${e.activity}, ${e.minutes} min${nn ? ", " + nn[0] : ""}</span><small>${e.date}</small></li>` }).join("") || "<li><small>No outings yet. Make a plan and go.</small></li>"
+    }
+    loadJournal();
 
-$("make").onclick=async()=>{
-  $("make").disabled=true;$("make").textContent="Thinking locally…";
-  const r=await J("/api/plan",{method:"POST",body:JSON.stringify({activity:$("act").value,minutes:+$("min").value,weather:$("wx").value,garden})});
-  lastPlan=r.plan;$("plan").hidden=false;$("plan").textContent=r.plan;$("src").textContent="Written by: "+r.source;$("leaverow").hidden=false;
-  $("make").disabled=false;$("make").textContent="Make my plan"};
-$("print").onclick=()=>window.print();
+    const pos = () => new Promise((ok, no) => navigator.geolocation ? navigator.geolocation.getCurrentPosition(p => ok(p.coords), no, { timeout: 15000, enableHighAccuracy: true, maximumAge: 0 }) : no());
+    $("wxb").onclick = async () => {
+      try {
+        const c = await pos(); store.set("lat", c.latitude.toFixed(5)); store.set("lon", c.longitude.toFixed(5)); store.set("pin", "");
+        const w = await J(`/api/weather?lat=${c.latitude}&lon=${c.longitude}`);
+        if (w.text) { $("wx").value = w.text; $("wxn").textContent = "Live weather from Open-Meteo (needs internet)." } else $("wxn").textContent = w.error
+      }
+      catch (e) { $("wxn").textContent = "Location blocked. Type conditions by hand." }
+    };
 
-$("leavebtn").onclick=()=>{let t=+$("min").value*60;$("leave").classList.add("on");
-  const tick=()=>{const m=Math.floor(Math.abs(t)/60),s=Math.abs(t)%60;$("clock").textContent=(t<0?"+":"")+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");t--};
-  tick();timer=setInterval(tick,1000)};
-$("back").onclick=async()=>{clearInterval(timer);$("leave").classList.remove("on");
-  await J("/api/journal",{method:"POST",body:JSON.stringify({activity:$("act").value,minutes:+$("min").value,note:lastPlan.split("\n")[0]})});loadJournal()};
+    function wav(pcm, sr) {
+      const b = new DataView(new ArrayBuffer(44 + pcm.length * 2)), w = (o, s) => [...s].forEach((c, i) => b.setUint8(o + i, c.charCodeAt(0)));
+      w(0, "RIFF"); b.setUint32(4, 36 + pcm.length * 2, true); w(8, "WAVEfmt "); b.setUint32(16, 16, true); b.setUint16(20, 1, true); b.setUint16(22, 1, true);
+      b.setUint32(24, sr, true); b.setUint32(28, sr * 2, true); b.setUint16(32, 2, true); b.setUint16(34, 16, true); w(36, "data"); b.setUint32(40, pcm.length * 2, true);
+      pcm.forEach((v, i) => b.setInt16(44 + i * 2, Math.max(-1, Math.min(1, v)) * 32767, true)); return b.buffer
+    }
+    async function identify(blob) {
+      $("bnote").textContent = "Listening…";
+      try {
+        const ac = new AudioContext({ sampleRate: 48000 }), buf = await ac.decodeAudioData(await blob.arrayBuffer());
+        const r = await J(`/api/birds?lat=${store.get("lat")}&lon=${store.get("lon")}`, { method: "POST", body: wav(buf.getChannelData(0), 48000) });
+        $("bnote").textContent = r.error || (r.birds.length ? `Life list: ${r.lifelist} species.` : "No confident match. Move closer and try in a quiet spot.");
+        $("blist").innerHTML = (r.birds || []).map(b => `<li><span>${b.name}<br><small><i>${b.sci}</i></small></span><small>${Math.round(b.conf * 100)}%</small></li>`).join("")
+      }
+      catch (e) { $("bnote").textContent = "Could not read that audio." }
+    }
+    $("bf").onchange = e => e.target.files[0] && identify(e.target.files[0]);
+    $("rec").onclick = async () => {
+      try {
+        const s = await navigator.mediaDevices.getUserMedia({ audio: true }), m = new MediaRecorder(s), ch = [];
+        m.ondataavailable = e => ch.push(e.data);
+        m.onstop = () => { s.getTracks().forEach(t => t.stop()); $("rec").disabled = false; $("rec").textContent = "Record 15 seconds"; identify(new Blob(ch)) };
+        m.start(); $("rec").disabled = true; let n = 15; const t = setInterval(() => { $("rec").textContent = `Recording ${n--}s`; if (n < 0) { clearInterval(t); m.stop() } }, 1000)
+      }
+      catch (e) { $("bnote").textContent = "Microphone blocked." }
+    };
 
-async function loadJournal(){
-  const j=await J("/api/journal");const days=new Set(j.map(e=>e.date));let s=0,d=new Date();
-  if(!days.has(d.toISOString().slice(0,10)))d.setDate(d.getDate()-1);
-  while(days.has(d.toISOString().slice(0,10))){s++;d.setDate(d.getDate()-1)}
-  $("streak").textContent=s;
-  $("jlist").innerHTML=j.slice(-5).reverse().map(e=>`<li><span>${e.activity}, ${e.minutes} min</span><small>${e.date}</small></li>`).join("")||"<li><small>No outings yet. Make a plan and go.</small></li>"}
-loadJournal();
+    const dirs = ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"], dn = b => dirs[Math.round((((b % 360) + 360) % 360) / 45) % 8];
+    function dest(lat, lon, brg, km) {
+      const d = km / 6371, b = brg * Math.PI / 180, p = lat * Math.PI / 180, l = lon * Math.PI / 180,
+        p2 = Math.asin(Math.sin(p) * Math.cos(d) + Math.cos(p) * Math.sin(d) * Math.cos(b)),
+        l2 = l + Math.atan2(Math.sin(b) * Math.sin(d) * Math.cos(p), Math.cos(d) - Math.sin(p) * Math.sin(p2)); return [p2 * 180 / Math.PI, l2 * 180 / Math.PI]
+    }
+    let LM = null, LG = null;
+    function loadLeaflet() {
+      return new Promise((ok, no) => {
+        if (window.L && window.L.map) return ok();
+        const c = document.createElement("link"); c.rel = "stylesheet"; c.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"; document.head.appendChild(c);
+        const j = document.createElement("script"); j.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"; j.onload = ok; j.onerror = no; document.head.appendChild(j); setTimeout(no, 8000)
+      })
+    }
+    async function showMap(pts, acc, pinned) {
+      try {
+        await loadLeaflet(); $("map").hidden = false; $("loopsvg").style.display = "none";
+        if (!LM) { LM = L.map("map"); L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "&copy; OpenStreetMap contributors" }).addTo(LM); LG = L.layerGroup().addTo(LM); LM.on("click", e => { store.set("lat", e.latlng.lat.toFixed(5)); store.set("lon", e.latlng.lng.toFixed(5)); store.set("pin", "1"); makeLoop() }) }
+        LG.clearLayers(); L.polyline(pts, { color: "#b8432a", weight: 4, dashArray: "2 8" }).addTo(LG);
+        L.circleMarker(pts[0], { radius: 9, color: "#16301f", fillOpacity: 1 }).addTo(LG).bindTooltip("Start");
+        if (acc) L.circle(pts[0], { radius: acc, color: "#2b6cb0", weight: 1, fillOpacity: .08 }).addTo(LG);
+        $("maploc").textContent = pinned ? "Start point set by you. Press Use my location to switch back to live location." : acc ? `Live location, accuracy about ${Math.round(acc)} m.` + (acc > 500 ? " A laptop guesses from Wi-Fi or IP and can be kilometres off. Click the map where you really are to fix it." : "") : "Using your last saved location. Click the map to set your real start point.";
+        pts.slice(1, 3).forEach(p => L.circleMarker(p, { radius: 6, color: "#4f6b3a", fillOpacity: 1 }).addTo(LG));
+        LM.fitBounds(L.latLngBounds(pts), { padding: [30, 30] }); setTimeout(() => LM.invalidateSize(), 60)
+      }
+      catch (e) { $("map").hidden = true; $("loopsvg").style.display = "" }
+    }
+    async function makeLoop() {
+      let lat = parseFloat(store.get("lat")), lon = parseFloat(store.get("lon")), acc = null;
+      if (store.get("pin") != "1" && $("act").value != "gardening") { try { const c = await pos(); lat = c.latitude; lon = c.longitude; acc = c.accuracy; store.set("lat", lat.toFixed(5)); store.set("lon", lon.toFixed(5)) } catch (e) { } }
+      if (isNaN(lat) || $("act").value == "gardening") { $("loopbox").hidden = true; return null }
+      const min = +$("min").value, km = +(min / 60 * ({ run: 9, hike: 3.5 }[$("act").value] || 4.5)).toFixed(1), s = km / 3, b0 = (new Date().getDate() * 47) % 360;
+      const A = dest(lat, lon, b0, s), B = dest(lat, lon, b0 + 60, s), pts = [[lat, lon], A, B, [lat, lon]], L = { km, legs: [[b0, s], [b0 + 120, s], [b0 + 240, s]] };
+      const k = Math.cos(lat * Math.PI / 180), P = pts.map(([a, o]) => [(o - lon) * k, -(a - lat)]), xs = P.map(p => p[0]), ys = P.map(p => p[1]), x0 = Math.min(...xs), y0 = Math.min(...ys),
+        sc = Math.min(240 / ((Math.max(...xs) - x0) || 1), 150 / ((Math.max(...ys) - y0) || 1)), q = P.map(p => [30 + (p[0] - x0) * sc, 35 + (p[1] - y0) * sc]);
+      $("loopsvg").innerHTML = `<polyline points="${q.map(p => p.join(",")).join(" ")}" style="fill:none;stroke:var(--maple);stroke-width:3;stroke-dasharray:2 7;stroke-linecap:round"/>`
+        + q.slice(0, 3).map((p, i) => `<circle cx="${p[0]}" cy="${p[1]}" r="${i ? 6 : 9}" style="fill:${i ? "var(--lichen)" : "var(--spruce)"}"/>`).join("")
+        + `<text x="${q[0][0] + 14}" y="${q[0][1] + 4}" font-size="12" style="fill:var(--ink)">Start</text><text x="262" y="20" font-size="12" style="fill:var(--ink)">N ↑</text>`;
+      $("legs").innerHTML = L.legs.map((l, i) => `<li><span>${["Head", "Turn right, head", "Turn right again, head"][i]} ${dn(l[0])} for ${l[1].toFixed(1)} km</span><small>~${Math.round(min / 3)} min</small></li>`).join("");
+      const f = a => a[0].toFixed(5) + "," + a[1].toFixed(5);
+      $("maplink").href = `https://www.google.com/maps/dir/?api=1&origin=${f(pts[0])}&destination=${f(pts[0])}&waypoints=${f(A)}%7C${f(B)}&travelmode=walking`;
+      $("loopbox").hidden = false; showMap(pts, acc, store.get("pin") == "1"); return L
+    }
+  </script>
+</body>
 
-const pos=()=>new Promise((ok,no)=>navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>ok(p.coords),no,{timeout:10000}):no());
-$("wxb").onclick=async()=>{try{const c=await pos();store.set("lat",c.latitude.toFixed(3));store.set("lon",c.longitude.toFixed(3));
-  const w=await J(`/api/weather?lat=${c.latitude}&lon=${c.longitude}`);
-  if(w.text){$("wx").value=w.text;$("wxn").textContent="Live weather from Open-Meteo (needs internet)."}else $("wxn").textContent=w.error}
- catch(e){$("wxn").textContent="Location blocked. Type conditions by hand."}};
-
-function wav(pcm,sr){const b=new DataView(new ArrayBuffer(44+pcm.length*2)),w=(o,s)=>[...s].forEach((c,i)=>b.setUint8(o+i,c.charCodeAt(0)));
- w(0,"RIFF");b.setUint32(4,36+pcm.length*2,true);w(8,"WAVEfmt ");b.setUint32(16,16,true);b.setUint16(20,1,true);b.setUint16(22,1,true);
- b.setUint32(24,sr,true);b.setUint32(28,sr*2,true);b.setUint16(32,2,true);b.setUint16(34,16,true);w(36,"data");b.setUint32(40,pcm.length*2,true);
- pcm.forEach((v,i)=>b.setInt16(44+i*2,Math.max(-1,Math.min(1,v))*32767,true));return b.buffer}
-async function identify(blob){$("bnote").textContent="Listening…";
- try{const ac=new AudioContext({sampleRate:48000}),buf=await ac.decodeAudioData(await blob.arrayBuffer());
-  const r=await J(`/api/birds?lat=${store.get("lat")}&lon=${store.get("lon")}`,{method:"POST",body:wav(buf.getChannelData(0),48000)});
-  $("bnote").textContent=r.error||(r.birds.length?`Life list: ${r.lifelist} species.`:"No confident match. Move closer and try in a quiet spot.");
-  $("blist").innerHTML=(r.birds||[]).map(b=>`<li><span>${b.name}<br><small><i>${b.sci}</i></small></span><small>${Math.round(b.conf*100)}%</small></li>`).join("")}
- catch(e){$("bnote").textContent="Could not read that audio."}}
-$("bf").onchange=e=>e.target.files[0]&&identify(e.target.files[0]);
-$("rec").onclick=async()=>{try{const s=await navigator.mediaDevices.getUserMedia({audio:true}),m=new MediaRecorder(s),ch=[];
- m.ondataavailable=e=>ch.push(e.data);
- m.onstop=()=>{s.getTracks().forEach(t=>t.stop());$("rec").disabled=false;$("rec").textContent="Record 15 seconds";identify(new Blob(ch))};
- m.start();$("rec").disabled=true;let n=15;const t=setInterval(()=>{$("rec").textContent=`Recording ${n--}s`;if(n<0){clearInterval(t);m.stop()}},1000)}
- catch(e){$("bnote").textContent="Microphone blocked."}};
-</script></body></html>
+</html>
