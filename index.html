@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Touch Grass Planner</title>
+<style>
+:root{--frost:#e8efec;--spruce:#16301f;--moss:#4f6b3a;--lichen:#b7cc7a;--maple:#b8432a;--ink:#14211a}
+@media(prefers-color-scheme:dark){:root{--frost:#101a14;--ink:#e3ece6;--spruce:#dfe9c4;--moss:#9db96b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--frost);color:var(--ink);font:16px/1.55 system-ui,sans-serif}
+h1,h2{font-family:Palatino,"Iowan Old Style",Georgia,serif;color:var(--spruce);margin:0}
+h1{font-size:clamp(2rem,6vw,3.4rem);line-height:1.05}
+main{max-width:1000px;margin:0 auto;padding:32px 20px 60px;display:grid;grid-template-columns:3fr 2fr;gap:40px}
+header{grid-column:1/-1;display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:8px}
+#status{font-size:.85rem;color:var(--moss)}
+section{min-width:0}h2{font-size:1.4rem;margin:0 0 10px}
+label{display:block;font-size:.9rem;margin:12px 0 4px}
+input,select,textarea,button{font:inherit;color:inherit}
+input,select,textarea{width:100%;padding:9px 10px;border:1.5px solid var(--moss);border-radius:6px;background:transparent}
+button{cursor:pointer;border:0;border-radius:6px;padding:11px 18px;background:var(--spruce);color:var(--frost);font-weight:600}
+button.go{background:var(--maple);color:#fff}button.quiet{background:transparent;color:var(--moss);border:1.5px solid var(--moss)}
+:focus-visible{outline:3px solid var(--maple);outline-offset:2px}
+#plan{white-space:pre-wrap;border-left:5px solid var(--lichen);padding:6px 0 6px 16px;margin-top:20px;font-size:1.05rem}
+.src{font-size:.8rem;color:var(--moss);margin-top:6px}
+ul.rule{list-style:none;padding:0;margin:0}ul.rule li{padding:8px 0;border-bottom:1px solid var(--moss);display:flex;justify-content:space-between;gap:10px}
+ul.rule small{color:var(--moss)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.row>*{flex:1}
+details{margin:14px 0}summary{cursor:pointer;color:var(--moss)}
+#leave{position:fixed;inset:0;background:#0d1f14;color:#e5efd0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:9}
+#leave.on{display:flex}#leave .t{font:700 clamp(4rem,18vw,9rem)/1 Palatino,Georgia,serif;font-variant-numeric:tabular-nums}
+.streak{font-family:Palatino,Georgia,serif;font-size:2.6rem;color:var(--maple);line-height:1}
+@media(max-width:760px){main{grid-template-columns:1fr}}
+@media print{#status,button,details,form,#journalbox{display:none}main{display:block}}
+</style></head><body>
+<main>
+<header><h1>Touch Grass Planner</h1><div id="status">checking local model…</div></header>
+
+<section>
+  <h2>Plan your time outside</h2>
+  <div class="row">
+    <div><label for="act">What sounds good?</label>
+      <select id="act"><option>walk</option><option>hike</option><option>birdwatching</option><option>run</option><option>fall foliage photo walk</option><option>gardening</option></select></div>
+    <div><label for="min">Minutes: <b id="minv">45</b></label><input id="min" type="range" min="10" max="240" step="5" value="45"></div>
+  </div>
+  <label for="wx">Conditions (optional)</label>
+  <div class="row"><input id="wx" placeholder="e.g. cool, light drizzle, sunset at 6:10" style="flex:3"><button id="wxb" class="quiet" type="button">Use my location</button></div><div class="src" id="wxn"></div>
+  <div class="row"><button id="make" class="go">Make my plan</button><button id="print" class="quiet">Print it, close the laptop</button></div>
+  <div id="plan" aria-live="polite" hidden></div><div class="src" id="src"></div>
+  <div class="row" id="leaverow" hidden><button id="leavebtn">Start. Screen goes dark.</button></div>
+
+  <div id="birdbox" style="margin-top:36px"><h2>Listen for birds</h2>
+    <p style="color:var(--moss);margin:0 0 10px">Recorded here, identified on this machine by BirdNET.</p>
+    <div class="row"><button id="rec" class="go">Record 15 seconds</button><input id="bf" type="file" accept="audio/*" aria-label="Or pick an audio file"></div>
+    <ul class="rule" id="blist" style="margin-top:10px"></ul><div class="src" id="bnote"></div></div>
+  <div id="journalbox" style="margin-top:36px">
+    <h2>Outings</h2>
+    <div class="streak" id="streak">0</div><div id="streaklbl" style="color:var(--moss)">days outside in a row</div>
+    <ul class="rule" id="jlist" style="margin-top:12px"></ul>
+  </div>
+</section>
+
+<section>
+  <h2>Plant this week</h2>
+  <details id="setup" open><summary>Your climate</summary><label for="cl">Climate</label><select id="cl"><option value="tropical">Tropical (Sri Lanka)</option><option value="frost">Has frost</option></select><div id="frostf">
+    <label for="lf">Last spring frost</label><input id="lf" type="date">
+    <label for="ff">First fall frost</label><input id="ff" type="date">
+    </div><div class="row"><button id="savef">Save</button></div></details>
+  <div id="gnote" style="color:var(--moss);margin-bottom:8px"></div>
+  <ul class="rule" id="now"></ul>
+  <h2 style="margin-top:22px;font-size:1.1rem">Coming in two weeks</h2>
+  <ul class="rule" id="soon"></ul>
+</section>
+</main>
+
+<div id="leave" role="dialog" aria-label="Time outside">
+  <p style="font-size:1.3rem">Go. This tab will keep time.</p><div class="t" id="clock">00:00</div>
+  <p>Back early is fine.</p><div class="row" style="max-width:320px"><button class="go" id="back">I'm back. Log it.</button></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);let garden=[],lastPlan="",timer=null;
+const store={get:k=>{try{return localStorage.getItem(k)||""}catch(e){return""}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const J=(u,o)=>fetch(u,o).then(r=>r.json());
+$("min").oninput=()=>$("minv").textContent=$("min").value;
+J("/api/status").then(s=>{$("status").textContent=!s.ollama?"Model offline: using simple template. Start Ollama.":s.ready?"Local model "+s.model+" ready. No internet needed.":"Run: ollama pull "+s.model});
+
+function list(el,items,empty){el.innerHTML=items.length?items.map(i=>`<li><span>${i.name}</span><small>${i.how}</small></li>`).join(""):`<li><small>${empty}</small></li>`}
+async function loadGarden(){
+  const cl=$("cl").value,lf=$("lf").value,ff=$("ff").value;$("frostf").hidden=cl=="tropical";
+  if(cl=="frost"&&(!lf||!ff))return;
+  const g=await J(`/api/garden?climate=${cl}&last=${lf}&first=${ff}`);if(g.error)return;
+  garden=g.now.map(c=>c.name);list($("now"),g.now,"Nothing to sow now. Good week to weed and mulch.");list($("soon"),g.soon,"Nothing queued.");
+  $("gnote").textContent=g.season||(g.days_to_first_frost>0?`${g.days_to_first_frost} days until first fall frost.`:"First frost has passed.");
+  $("setup").open=false}
+$("cl").value=store.get("cl")||"tropical";$("lf").value=store.get("lf");$("ff").value=store.get("ff");
+$("cl").onchange=()=>{store.set("cl",$("cl").value);loadGarden()};$("savef").onclick=()=>{store.set("lf",$("lf").value);store.set("ff",$("ff").value);loadGarden()};loadGarden();
+
+$("make").onclick=async()=>{
+  $("make").disabled=true;$("make").textContent="Thinking locally…";
+  const r=await J("/api/plan",{method:"POST",body:JSON.stringify({activity:$("act").value,minutes:+$("min").value,weather:$("wx").value,garden})});
+  lastPlan=r.plan;$("plan").hidden=false;$("plan").textContent=r.plan;$("src").textContent="Written by: "+r.source;$("leaverow").hidden=false;
+  $("make").disabled=false;$("make").textContent="Make my plan"};
+$("print").onclick=()=>window.print();
+
+$("leavebtn").onclick=()=>{let t=+$("min").value*60;$("leave").classList.add("on");
+  const tick=()=>{const m=Math.floor(Math.abs(t)/60),s=Math.abs(t)%60;$("clock").textContent=(t<0?"+":"")+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");t--};
+  tick();timer=setInterval(tick,1000)};
+$("back").onclick=async()=>{clearInterval(timer);$("leave").classList.remove("on");
+  await J("/api/journal",{method:"POST",body:JSON.stringify({activity:$("act").value,minutes:+$("min").value,note:lastPlan.split("\n")[0]})});loadJournal()};
+
+async function loadJournal(){
+  const j=await J("/api/journal");const days=new Set(j.map(e=>e.date));let s=0,d=new Date();
+  if(!days.has(d.toISOString().slice(0,10)))d.setDate(d.getDate()-1);
+  while(days.has(d.toISOString().slice(0,10))){s++;d.setDate(d.getDate()-1)}
+  $("streak").textContent=s;
+  $("jlist").innerHTML=j.slice(-5).reverse().map(e=>`<li><span>${e.activity}, ${e.minutes} min</span><small>${e.date}</small></li>`).join("")||"<li><small>No outings yet. Make a plan and go.</small></li>"}
+loadJournal();
+
+const pos=()=>new Promise((ok,no)=>navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>ok(p.coords),no,{timeout:10000}):no());
+$("wxb").onclick=async()=>{try{const c=await pos();store.set("lat",c.latitude.toFixed(3));store.set("lon",c.longitude.toFixed(3));
+  const w=await J(`/api/weather?lat=${c.latitude}&lon=${c.longitude}`);
+  if(w.text){$("wx").value=w.text;$("wxn").textContent="Live weather from Open-Meteo (needs internet)."}else $("wxn").textContent=w.error}
+ catch(e){$("wxn").textContent="Location blocked. Type conditions by hand."}};
+
+function wav(pcm,sr){const b=new DataView(new ArrayBuffer(44+pcm.length*2)),w=(o,s)=>[...s].forEach((c,i)=>b.setUint8(o+i,c.charCodeAt(0)));
+ w(0,"RIFF");b.setUint32(4,36+pcm.length*2,true);w(8,"WAVEfmt ");b.setUint32(16,16,true);b.setUint16(20,1,true);b.setUint16(22,1,true);
+ b.setUint32(24,sr,true);b.setUint32(28,sr*2,true);b.setUint16(32,2,true);b.setUint16(34,16,true);w(36,"data");b.setUint32(40,pcm.length*2,true);
+ pcm.forEach((v,i)=>b.setInt16(44+i*2,Math.max(-1,Math.min(1,v))*32767,true));return b.buffer}
+async function identify(blob){$("bnote").textContent="Listening…";
+ try{const ac=new AudioContext({sampleRate:48000}),buf=await ac.decodeAudioData(await blob.arrayBuffer());
+  const r=await J(`/api/birds?lat=${store.get("lat")}&lon=${store.get("lon")}`,{method:"POST",body:wav(buf.getChannelData(0),48000)});
+  $("bnote").textContent=r.error||(r.birds.length?`Life list: ${r.lifelist} species.`:"No confident match. Move closer and try in a quiet spot.");
+  $("blist").innerHTML=(r.birds||[]).map(b=>`<li><span>${b.name}<br><small><i>${b.sci}</i></small></span><small>${Math.round(b.conf*100)}%</small></li>`).join("")}
+ catch(e){$("bnote").textContent="Could not read that audio."}}
+$("bf").onchange=e=>e.target.files[0]&&identify(e.target.files[0]);
+$("rec").onclick=async()=>{try{const s=await navigator.mediaDevices.getUserMedia({audio:true}),m=new MediaRecorder(s),ch=[];
+ m.ondataavailable=e=>ch.push(e.data);
+ m.onstop=()=>{s.getTracks().forEach(t=>t.stop());$("rec").disabled=false;$("rec").textContent="Record 15 seconds";identify(new Blob(ch))};
+ m.start();$("rec").disabled=true;let n=15;const t=setInterval(()=>{$("rec").textContent=`Recording ${n--}s`;if(n<0){clearInterval(t);m.stop()}},1000)}
+ catch(e){$("bnote").textContent="Microphone blocked."}};
+</script></body></html>

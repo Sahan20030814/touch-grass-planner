@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: touch-grass-planner
+    runtime: docker
+    plan: free
+    envVars:
+      - key: OLLAMA_URL   # your remote Ollama, e.g. a DigitalOcean GPU Droplet
+        sync: false
+      - key: TG_MODEL
+        value: gemma3:4b
