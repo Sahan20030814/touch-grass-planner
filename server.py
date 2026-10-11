@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Touch Grass Planner v2: local-first outdoor companion. Python stdlib only.
 Open pieces: Gemma (via Ollama) writes plans, BirdNET identifies bird calls, Open-Meteo gives weather."""
-import csv, json, math, os, subprocess, sys, tempfile, urllib.request
+import csv, json, math, os, re, subprocess, sys, tempfile, urllib.request
 from datetime import date, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -39,7 +39,7 @@ WMO = {0: "clear", 1: "mostly clear", 2: "partly cloudy", 3: "overcast", 45: "fo
        96: "thunderstorm", 99: "thunderstorm"}
 SYSTEM = ("You are a friendly outdoor coach. Reply in plain text, no markdown, under 110 words. "
           "Format: a short title line, then exactly 3 short steps starting with '-', then one line "
-          "starting 'Leave behind:' naming what to leave at home. Be specific and practical.")
+          "starting 'Leave behind:' naming what to leave at home. Be specific and practical. Use only the climate and season you are given. Never name a different season.")
 
 
 def garden(a):
@@ -98,6 +98,24 @@ def birds(wav, lat, lon):
     return {"birds": top, "lifelist": len(life)}
 
 
+def season_text(climate, lat):
+    m = date.today().month
+    if climate == "tropical":
+        s = "Maha season (north-east monsoon)" if m in (10, 11, 12, 1, 2) else "Yala season (south-west monsoon)"
+        return f"Tropical Sri Lanka, {s}. Warm all year. There is no autumn, winter or snow."
+    try: south = float(lat) < 0
+    except (TypeError, ValueError): south = False
+    names = ["winter", "winter", "spring", "spring", "spring", "summer", "summer", "summer", "autumn", "autumn", "autumn", "winter"]
+    n = names[(m + (5 if south else -1)) % 12]
+    return f"Temperate climate with four seasons. It is {n} right now."
+
+
+def clean_plan(text, climate):
+    if climate == "tropical":
+        text = re.sub(r"\b(autumn|winter)\s+", "", text, flags=re.I)
+    return text
+
+
 def ask_llm(prompt):
     body = json.dumps({"model": MODEL, "stream": False, "options": {"temperature": 0.7, "num_predict": 300},
                        "messages": [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}]}).encode()
@@ -142,9 +160,9 @@ class H(BaseHTTPRequestHandler):
         if p == "/api/birds": return self.send(birds(raw, *(qargs(q).get(k, "") for k in ("lat", "lon"))))
         d = json.loads(raw or b"{}")
         if p == "/api/plan":
-            prompt = (f"Activity: {d.get('activity')}. Time available: {d.get('minutes')} minutes. Month: {date.today():%B}. "
+            prompt = (f"Activity: {d.get('activity')}. Time available: {d.get('minutes')} minutes. Month: {date.today():%B}. Climate and season: {season_text(d.get('climate'), d.get('lat'))}. "
                       f"Conditions: {d.get('weather') or 'unknown'}. Garden jobs due: {', '.join(d.get('garden') or []) or 'none'}. Planned route: {d.get('loop') or 'free choice'}. Write the plan.")
-            try: return self.send({"plan": ask_llm(prompt), "source": MODEL})
+            try: return self.send({"plan": clean_plan(ask_llm(prompt), d.get("climate")), "source": MODEL})
             except Exception: return self.send({"plan": fallback(d), "source": "offline template (model not running)"})
         if p == "/api/journal":
             j = read_journal()

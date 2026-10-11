@@ -329,7 +329,7 @@
             <option>hike</option>
             <option>birdwatching</option>
             <option>run</option>
-            <option>fall foliage photo walk</option>
+            <option>photo walk</option>
             <option>gardening</option>
           </select>
         </div>
@@ -424,7 +424,7 @@
       hike: ["The steepest view behind you", "A trail marker or old stone", "Mud, moss or water: which came first?"],
       birdwatching: ["A call you cannot name yet", "Where birds go quiet when you stop", "Something with a nest"],
       run: ["Your breathing when you slow down", "A hill you usually avoid", "Someone else moving outside"],
-      "fall foliage photo walk": ["A leaf with two colours", "Light coming through a canopy", "The first tree turning in your street"],
+      "photo walk": ["A leaf with two colours", "Light coming through a canopy", "Something that looks different up close"],
       gardening: ["A bed that needs water or shade", "An insect doing a job", "Soil that crumbles in your hand"]
     };
     const ANY = ["The farthest sound you can hear", "A spot you would come back to", "Something that smells of rain or earth", "The sky between two things"];
@@ -447,7 +447,7 @@
     $("make").onclick = async () => {
       $("make").disabled = true; $("make").textContent = "Thinking locally…";
       const L = await makeLoop();
-      const r = await J("/api/plan", { method: "POST", body: JSON.stringify({ activity: $("act").value, minutes: +$("min").value, weather: $("wx").value, garden, loop: L ? `${L.km} km triangle loop, first leg heading ${dn(L.legs[0][0])}` : "" }) });
+      const r = await J("/api/plan", { method: "POST", body: JSON.stringify({ activity: $("act").value, minutes: +$("min").value, weather: $("wx").value, garden, climate: $("cl").value, lat: store.get("lat"), loop: L ? `${L.km} km triangle loop, first leg heading ${dn(L.legs[0][0])}` : "" }) });
       lastPlan = r.plan; $("plan").hidden = false; $("plan").textContent = r.plan; $("src").textContent = "Written by: " + r.source; $("leaverow").hidden = false; showNotice();
       $("make").disabled = false; $("make").textContent = "Make my plan"
     };

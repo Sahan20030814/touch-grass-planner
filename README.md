@@ -2,9 +2,13 @@
 
 > A local-first outdoor companion. An open-weight model on your own machine plans the outing, then the screen goes dark and you go outside.
 
+![Touch Grass Planner: a local Gemma model plans your walk, then the screen goes dark](docs/cover.png)
+
 Built for the **Hacktoberfest 2026 Open-Source AI Challenge, Week 1** (theme: *Touch Grass*).
 
-<!-- Add screenshots here after you run it:
+**Live demo:** https://touch-grass-planner-oi06.onrender.com/ (the hosted copy cannot run the model, so it shows a clearly labelled template plan; the first load can take up to a minute on Render's free tier)
+
+<!-- Add more screenshots here after you run it:
 ![Planner](docs/planner.png)
 ![Loop map](docs/loop.png)
 -->
@@ -13,7 +17,7 @@ Built for the **Hacktoberfest 2026 Open-Source AI Challenge, Week 1** (theme: *T
 
 | Feature | What you get | Needs internet? |
 |---|---|---|
-| **Outing plan** | A short, specific plan written by Gemma (via Ollama) from your activity, time, conditions, garden jobs and route | No |
+| **Outing plan** | A short, specific plan written by Gemma (via Ollama) from your activity, time, conditions, garden jobs, route, and your climate and season | No |
 | **Loop route** | A triangle loop sized to your time, computed on-device from compass bearings, drawn as a sketch and on a map, with a Google Maps walking link. With internet it checks OpenStreetMap tiles and rotates or shortens the loop to keep it out of the sea and lakes | Map, water check and link |
 | **What to notice** | A 5-item checklist tied to your activity. Ticks are counted in your journal | No |
 | **Start timer** | Press *Start* and the screen turns into a dark countdown that shows your loop map and legs. *I'm back* logs the outing | No (map tiles need it) |
@@ -46,6 +50,8 @@ flowchart LR
 
 `server.py` is a standard-library Python HTTP server (no pip packages needed). `index.html` is a single file with inline CSS and JavaScript.
 
+The model only writes words. Everything that has to be right (crop calendars, loop geometry, water check, journal) is ordinary code. The prompt sent to the model contains the activity, minutes, weather, garden jobs, the loop, and the climate and season (for example "Tropical Sri Lanka, Maha season, no autumn or winter"). In tropical mode the server also strips the words "autumn" and "winter" from the reply.
+
 ## Open-source stack
 
 | Piece | Used for |
@@ -54,7 +60,7 @@ flowchart LR
 | [Ollama](https://ollama.com) | Running the model locally |
 | [BirdNET-Analyzer](https://github.com/birdnet-team/BirdNET-Analyzer) | Bird sound identification (optional) |
 | [Open-Meteo](https://open-meteo.com) | Free weather, no key |
-| [Leaflet](https://leafletjs.com) and [OpenStreetMap](https://www.openstreetmap.org) | The loop map |
+| [Leaflet](https://leafletjs.com) and [OpenStreetMap](https://www.openstreetmap.org) | The loop map and the water check |
 
 ## Quick start
 
@@ -103,15 +109,16 @@ Download the GGUF yourself and import it:
 
 ## Using the app
 
-1. Pick an activity and how many minutes you have.
+1. Pick an activity (walk, hike, birdwatching, run, photo walk, gardening) and how many minutes you have.
 2. Press **Use my location** to fill live weather, or type conditions by hand (for example `cloudy, light rain later, muddy trail, with my dog`). More detail gives a more specific plan.
-3. Press **Make my plan**. You get the plan, a notice checklist, and (outdoor activities) a loop with a map.
-4. On a laptop the location can be kilometres off. **Click the map** where you really are to set the start point. Press *Use my location* to go back to live location.
+3. Under **Your climate**, choose *Tropical (Sri Lanka)* or *Has frost*. This changes the garden list and the season the model is told about.
+4. Press **Make my plan**. You get the plan, a notice checklist, and (outdoor activities) a loop with a map.
+5. On a laptop the location can be kilometres off. **Click the map** where you really are to set the start point. Press *Use my location* to go back to live location.
    If the loop crosses water or private land, press **Turn loop** to rotate it 60 degrees.
-5. Press **Start. Screen goes dark.** and go. Press **I'm back. Log it.** when you return.
-6. Tick the notice items on the way. The count is saved with the outing.
+6. Press **Start. Screen goes dark.** and go. Press **I'm back. Log it.** when you return.
+7. Tick the notice items on the way. The count is saved with the outing.
 
-Garden panel: choose *Tropical (Sri Lanka)* or *Has frost* under **Your climate**. Frost mode needs your last spring frost and first fall frost dates.
+Frost mode needs your last spring frost and first fall frost dates.
 
 ## Configuration
 
@@ -147,14 +154,14 @@ macOS / Linux: `python3.12 -m venv .venv`, `source .venv/bin/activate`. The firs
 | GET | `/api/garden?climate=tropical` or `?climate=frost&last=YYYY-MM-DD&first=YYYY-MM-DD` | Crops to sow now and soon |
 | GET | `/api/weather?lat=..&lon=..` | Weather text from Open-Meteo |
 | GET / POST | `/api/journal` | Read or add an outing |
-| POST | `/api/plan` | JSON in, plan text out |
+| POST | `/api/plan` | JSON in (activity, minutes, weather, garden, climate, lat, loop), plan text out |
 | POST | `/api/birds?lat=..&lon=..` | Raw WAV in, top 5 species out |
 
 ## Data and privacy
 
 - `journal.json` and `birds.json` are created next to `server.py` (or in `DATA_DIR`). They are in `.gitignore`.
 - Browser `localStorage` keeps your climate, frost dates, saved coordinates and the pinned-start flag.
-- Network calls go only to: Open-Meteo (weather), OpenStreetMap and the Leaflet CDN (map), and Google Maps only if you click the walking link. Plans and audio never leave your machine.
+- Network calls go only to: Open-Meteo (weather), OpenStreetMap and the Leaflet CDN (map and water check), and Google Maps only if you click the walking link. Plans and audio never leave your machine.
 
 ## Deploy
 
@@ -177,6 +184,8 @@ Hosted copies share one journal stored in `/tmp`, which is wiped on restart. Tre
 touch-grass-planner/
 ├── server.py      # stdlib HTTP server, garden logic, Ollama, weather, BirdNET calls
 ├── index.html     # whole UI: HTML, CSS, JS
+├── docs/
+│   └── cover.png  # cover image
 ├── Dockerfile     # optional BirdNET via WITH_BIRDS=1
 ├── render.yaml    # Render blueprint
 ├── README.md
@@ -192,10 +201,12 @@ touch-grass-planner/
 | `python` not recognised | Reinstall Python with PATH ticked, or use `py server.py` |
 | Plan says *offline template* | Ollama is not running or the model name does not match `TG_MODEL` |
 | Weird text such as `<end_of_turn>` | Use the Modelfile template above when importing the GGUF |
+| Plan mentions a season that does not fit | Check *Your climate* is set to the right option, then press *Make my plan* again |
 | Location blocked | Click the site icon in the address bar, set Location to Allow |
 | Map is not drawn | Needs internet. The sketch shows instead |
 | Location is far off | Laptops guess from Wi-Fi or IP. Click the map to set your start |
 | Loop goes into the sea or over private land | Click the map to move the start inland, then press *Turn loop* until it sits on land |
+| Water check says it could not check the map | Needs internet and tile access. The loop may cross water, so check the map yourself |
 | *BirdNET not installed* | See Bird ID setup |
 | *BirdNET failed ... ConnectionError* | First run needs internet to fetch model files. Try another network |
 
@@ -203,7 +214,7 @@ touch-grass-planner/
 
 - The loop is a straight-line triangle, not turn-by-turn. The water check reads map-tile colours (online only), so it avoids sea, lakes and wide rivers but not private land, fences or buildings. Use the maps link for real streets and trails.
 - The tropical crop list is a general guide for hill-country and intermediate-zone Sri Lanka. Confirm with your local Department of Agriculture office.
-- Small models can be wrong or repetitive. Treat plans as suggestions and check conditions yourself.
+- Small models can be wrong or repetitive, even with the climate and season in the prompt. Treat plans as suggestions and check conditions yourself.
 - Bird ID depends on recording quality and BirdNET's coverage. Treat low-confidence results with caution.
 - Hosted demos do not run the model unless you connect a remote Ollama.
 
