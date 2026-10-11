@@ -14,7 +14,7 @@ Built for the **Hacktoberfest 2026 Open-Source AI Challenge, Week 1** (theme: *T
 | Feature | What you get | Needs internet? |
 |---|---|---|
 | **Outing plan** | A short, specific plan written by Gemma (via Ollama) from your activity, time, conditions, garden jobs and route | No |
-| **Loop route** | A triangle loop sized to your time, computed on-device from compass bearings, drawn as a sketch and on a map, with a Google Maps walking link | Map and link only |
+| **Loop route** | A triangle loop sized to your time, computed on-device from compass bearings, drawn as a sketch and on a map, with a Google Maps walking link. With internet it checks OpenStreetMap tiles and rotates or shortens the loop to keep it out of the sea and lakes | Map, water check and link |
 | **What to notice** | A 5-item checklist tied to your activity. Ticks are counted in your journal | No |
 | **Start timer** | Press *Start* and the screen turns into a dark countdown that shows your loop map and legs. *I'm back* logs the outing | No (map tiles need it) |
 | **Garden planner** | What to sow this week. Tropical mode (Sri Lanka, Maha/Yala seasons) or frost mode (from your frost dates) | No |
@@ -107,6 +107,7 @@ Download the GGUF yourself and import it:
 2. Press **Use my location** to fill live weather, or type conditions by hand (for example `cloudy, light rain later, muddy trail, with my dog`). More detail gives a more specific plan.
 3. Press **Make my plan**. You get the plan, a notice checklist, and (outdoor activities) a loop with a map.
 4. On a laptop the location can be kilometres off. **Click the map** where you really are to set the start point. Press *Use my location* to go back to live location.
+   If the loop crosses water or private land, press **Turn loop** to rotate it 60 degrees.
 5. Press **Start. Screen goes dark.** and go. Press **I'm back. Log it.** when you return.
 6. Tick the notice items on the way. The count is saved with the outing.
 
@@ -194,12 +195,13 @@ touch-grass-planner/
 | Location blocked | Click the site icon in the address bar, set Location to Allow |
 | Map is not drawn | Needs internet. The sketch shows instead |
 | Location is far off | Laptops guess from Wi-Fi or IP. Click the map to set your start |
+| Loop goes into the sea or over private land | Click the map to move the start inland, then press *Turn loop* until it sits on land |
 | *BirdNET not installed* | See Bird ID setup |
 | *BirdNET failed ... ConnectionError* | First run needs internet to fetch model files. Try another network |
 
 ## Known limitations
 
-- The loop is a straight-line triangle, not turn-by-turn. It can cross water or private land. Use the maps link for real streets and trails.
+- The loop is a straight-line triangle, not turn-by-turn. The water check reads map-tile colours (online only), so it avoids sea, lakes and wide rivers but not private land, fences or buildings. Use the maps link for real streets and trails.
 - The tropical crop list is a general guide for hill-country and intermediate-zone Sri Lanka. Confirm with your local Department of Agriculture office.
 - Small models can be wrong or repetitive. Treat plans as suggestions and check conditions yourself.
 - Bird ID depends on recording quality and BirdNET's coverage. Treat low-confidence results with caution.
